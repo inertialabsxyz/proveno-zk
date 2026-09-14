@@ -9,7 +9,8 @@ edition = "2021"
 # the Noir backend. Deliberately built without `poseidon`: this path commits
 # with SHA-256, and skipping the feature keeps wasmer/cranelift out of the
 # build entirely.
-proveno = { path = "../", default-features = false, features = ["std", "zkvm", "serde"] }
+proveno = { workspace = true }
+proveno-zk = { path = "..", default-features = false, features = ["std", "zkvm", "serde"] }
 # `openvm::serde::to_vec` is the exact encoding `StdIn::write` uses, so the
 # bytes produced here are what the guest's `openvm::io::read` expects.
 openvm.workspace = true

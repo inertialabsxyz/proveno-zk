@@ -4,7 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-proveno = { path = "..", features = ["zkvm"] }
+proveno = { workspace = true }
+proveno-zk = { path = "..", features = ["zkvm"] }
 sha2.workspace = true
 
 [[bin]]

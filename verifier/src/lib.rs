@@ -26,7 +26,7 @@
 // This value is deterministic: it is the SHA-256 of the canonical bytes of the
 // policy (allowed domains sorted, methods sorted, all fields serialised in a
 // fixed order).  Regenerate with: cargo run -p proveno-verifier --bin policy-hash
-use proveno::zkvm::commitment::PublicInputs;
+use proveno_zk::zkvm::commitment::PublicInputs;
 use sha2::{Digest, Sha256};
 
 const MAGIC: &[u8; 4] = b"prvn";

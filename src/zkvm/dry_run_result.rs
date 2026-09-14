@@ -10,7 +10,8 @@
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
-use crate::{host::tape::OracleTape, vm::engine::VmOutput, zkvm::commitment::PublicInputs};
+use crate::zkvm::commitment::PublicInputs;
+use proveno::{host::tape::OracleTape, vm::engine::VmOutput};
 
 /// Result of a dry run: the VM output, oracle tape, provenance attestations,
 /// and the public inputs computed from all of the above.

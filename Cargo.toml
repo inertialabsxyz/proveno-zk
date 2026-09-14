@@ -1,0 +1,50 @@
+[package]
+name = "proveno-zk"
+version.workspace = true
+edition.workspace = true
+
+[workspace]
+members = [
+    "proveno-witness",
+    "proveno-noir",
+    "verifier",
+    "proveno-openvm",
+    "proveno-openvm-host",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+# Single source of truth for the version pins shared across this workspace.
+[workspace.dependencies]
+proveno = { git = "https://github.com/inertialabsxyz/proveno-core.git", tag = "v0.2.0", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = { version = "0.10", default-features = false, features = ["oid"] }
+sha3 = { version = "0.10", default-features = false }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+# The only non-crates.io source in this workspace.
+openvm = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.2", features = ["std"] }
+hex = "0.4"
+
+[features]
+default = ["std", "poseidon"]
+std = ["dep:serde_json", "proveno/std"]
+serde = ["dep:serde", "proveno/serde"]
+zkvm = []
+# Poseidon2 commitments for the Noir path. Pulls acir -> bn254_blackbox_solver
+# -> wasmer -> cranelift, whose build script hard-panics on the custom RISC-V
+# triples zkVM toolchains use. Leave off for guest builds.
+poseidon = ["proveno/poseidon"]
+
+[dependencies]
+proveno = { workspace = true }
+sha2.workspace = true
+sha3.workspace = true
+serde = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde_json.workspace = true

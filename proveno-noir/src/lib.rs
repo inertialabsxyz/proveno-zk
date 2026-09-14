@@ -3,11 +3,9 @@ pub mod witness;
 
 use std::path::PathBuf;
 
-use proveno::{
-    TapeHost, Vm, VmConfig, compiler::CompiledProgram, noir::encoder::encode_program,
-    types::value::LuaValue,
-};
+use proveno::{TapeHost, Vm, VmConfig, compiler::CompiledProgram, types::value::LuaValue};
 use proveno_witness::prover::DryRunResult;
+use proveno_zk::noir::encoder::encode_program;
 
 pub use prover::{NoirProof, NoirProver, NoirPublicInputs, ProveError};
 pub use witness::{NoirWitness, WitnessError, build_witness, write_prover_toml};

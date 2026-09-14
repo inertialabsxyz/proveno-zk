@@ -20,11 +20,8 @@
 
 use alloc::{format, string::String, vec::Vec};
 
-use crate::{
-    policy::canonical::{PolicyView, get_url_from_args, is_http_tool},
-    types::table::LuaTable,
-    vm::engine::HostInterface,
-};
+use crate::policy::canonical::{PolicyView, get_url_from_args, is_http_tool};
+use proveno::{types::table::LuaTable, vm::engine::HostInterface};
 
 /// Wraps a host and rejects tool calls the policy does not permit.
 pub struct PolicyEnforcingHost<'a, H> {
@@ -79,11 +76,11 @@ impl<H: HostInterface> HostInterface for PolicyEnforcingHost<'_, H> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
+    use alloc::vec;
+    use proveno::{
         host::tape::{OracleTape, TapeEntry, TapeHost},
         types::value::{LuaString, LuaValue},
     };
-    use alloc::vec;
 
     /// Canonical bytes for a policy, built by hand so these tests do not need
     /// `std` or `OraclePolicy`.
@@ -114,7 +111,7 @@ mod tests {
     fn args_with_url(url: &str) -> LuaTable {
         let mut t = LuaTable::new();
         t.rawset(
-            crate::types::table::LuaKey::String(LuaString::from_str("url")),
+            proveno::types::table::LuaKey::String(LuaString::from_str("url")),
             LuaValue::String(LuaString::from_str(url)),
         )
         .unwrap();

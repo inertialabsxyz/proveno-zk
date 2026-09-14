@@ -10,6 +10,12 @@ pub struct ProverHost {
     client: reqwest::blocking::Client,
 }
 
+impl Default for ProverHost {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ProverHost {
     pub fn new() -> Self {
         ProverHost {

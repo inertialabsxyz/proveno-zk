@@ -7,15 +7,17 @@
 use alloc::{string::String, vec::Vec};
 
 use crate::{
+    policy::{canonical::PolicyView, guest::PolicyEnforcingHost},
+    zkvm::commitment::{PublicInputs, compute_public_inputs_sha256_with_policy_hash},
+};
+use proveno::{
     compiler::{program_hash::compute_program_hash_sha256, proto::CompiledProgram},
     host::tape::{OracleTape, TapeEntry, TapeHost},
-    policy::{canonical::PolicyView, guest::PolicyEnforcingHost},
     types::value::LuaValue,
     vm::{
         engine::{Vm, VmConfig, VmOutput},
         gas::VmError,
     },
-    zkvm::commitment::{PublicInputs, compute_public_inputs_sha256_with_policy_hash},
 };
 use sha2::{Digest, Sha256};
 
@@ -167,8 +169,8 @@ impl GuestInput {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{compiler::compile, host::tape::TapeEntry, parser::parse};
     use alloc::vec;
+    use proveno::{compiler::compile, host::tape::TapeEntry, parser::parse};
 
     fn guest_input_for(src: &str) -> GuestInput {
         let program = compile(&parse(src).unwrap()).unwrap();

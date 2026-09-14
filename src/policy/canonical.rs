@@ -16,7 +16,7 @@
 
 use alloc::{format, string::String, vec::Vec};
 
-use crate::types::{
+use proveno::types::{
     table::{LuaKey, LuaTable},
     value::{LuaString, LuaValue},
 };

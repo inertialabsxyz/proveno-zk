@@ -69,10 +69,9 @@ fn main() {
 
     if !do_prove {
         // Replicate prior behaviour: write Prover.toml only, no proving.
-        use proveno::{
-            TapeHost, Vm, VmConfig, noir::encoder::encode_program, types::value::LuaValue,
-        };
+        use proveno::{TapeHost, Vm, VmConfig, types::value::LuaValue};
         use proveno_noir::{build_witness, write_prover_toml};
+        use proveno_zk::noir::encoder::encode_program;
 
         let bytecode = encode_program(&compiled_program).unwrap_or_else(|e| {
             eprintln!("encode error: {e:?}");

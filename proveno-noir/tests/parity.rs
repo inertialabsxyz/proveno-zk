@@ -1,10 +1,10 @@
 use proveno::compiler::compile;
-use proveno::noir::encoder::encode_program;
 use proveno::parser::parse;
 use proveno::types::value::LuaValue;
-use proveno::zkvm::commitment::compute_public_inputs;
 use proveno::{NoopHost, OracleTape, Vm, VmConfig};
 use proveno_noir::witness::build_witness;
+use proveno_zk::noir::encoder::encode_program;
+use proveno_zk::zkvm::commitment::compute_public_inputs;
 
 #[test]
 fn noir_and_openvm_produce_identical_public_inputs() {

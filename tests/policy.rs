@@ -4,8 +4,6 @@ use proveno::{
     bytecode::verify,
     compiler::compile,
     parser::parse,
-    policy::profiles::{constrained_http_v1, template_price_feed_v1},
-    policy::{OraclePolicy, OraclePolicyHost, TlsRequirement},
     types::{
         table::{LuaKey, LuaTable},
         value::{LuaString, LuaValue},
@@ -14,6 +12,10 @@ use proveno::{
         engine::{HostInterface, Vm, VmConfig},
         gas::VmError,
     },
+};
+use proveno_zk::policy::{
+    OraclePolicy, OraclePolicyHost, TlsRequirement,
+    profiles::{constrained_http_v1, template_price_feed_v1},
 };
 use std::collections::HashMap;
 

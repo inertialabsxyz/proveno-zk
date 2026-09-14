@@ -3,13 +3,15 @@
 use proveno::{
     compiler::proto::CompiledProgram,
     host::tape::OracleTape,
-    policy::OraclePolicy,
     types::value::LuaValue,
     vm::engine::{HostInterface, Vm, VmConfig},
+};
+use proveno_zk::{
+    policy::OraclePolicy,
     zkvm::commitment::{compute_public_inputs, compute_public_inputs_with_policy},
 };
 
-pub use proveno::zkvm::dry_run_result::DryRunResult;
+pub use proveno_zk::zkvm::dry_run_result::DryRunResult;
 
 /// Executes Lua programs and (optionally) proves executions in the zkVM.
 pub struct Prover<H: HostInterface> {
@@ -65,7 +67,7 @@ impl<H: HostInterface> Prover<H> {
     ) -> Result<DryRunResult, proveno::VmError> {
         let mut vm = Vm::new(
             self.config.clone(),
-            proveno::policy::OraclePolicyHost::new(self.host, policy),
+            proveno_zk::policy::OraclePolicyHost::new(self.host, policy),
         );
         let output = vm.execute(program, input.clone())?;
 
@@ -107,7 +109,8 @@ impl<H: HostInterface> Prover<H> {
 mod tests {
     use super::*;
     use crate::host::ProverHost;
-    use proveno::{compiler, parser, policy::profiles::constrained_http_v1};
+    use proveno::{compiler, parser};
+    use proveno_zk::policy::profiles::constrained_http_v1;
 
     #[test]
     fn dry_run_with_policy_sets_policy_hash() {

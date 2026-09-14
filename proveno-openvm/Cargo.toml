@@ -11,4 +11,5 @@ openvm.workspace = true
 # target-lexicon 0.12, whose build script hard-panics on the custom RISC-V
 # target triple this crate compiles for. `zkvm` brings in PublicInputs and the
 # SHA-256 commitment helpers, which is the guest-side commitment scheme.
-proveno = { path = "../", default-features = false, features = ["zkvm", "serde"] }
+proveno = { workspace = true }
+proveno-zk = { path = "..", default-features = false, features = ["zkvm", "serde"] }

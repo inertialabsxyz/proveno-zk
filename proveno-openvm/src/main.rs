@@ -21,7 +21,7 @@
 //! computation and is shared verbatim with the host driver.
 
 use openvm::io::{read, reveal_u32};
-use proveno::zkvm::guest_input::GuestInput;
+use proveno_zk::zkvm::guest_input::GuestInput;
 
 /// Reveal a 32-byte digest as 8 `u32` public values starting at `slot`.
 ///

@@ -17,11 +17,11 @@
 use std::{env, fs, process::Command};
 
 use proveno::{
-    compiler::proto::CompiledProgram,
-    host::canonicalize::canonical_serialize,
+    compiler::proto::CompiledProgram, host::canonicalize::canonical_serialize,
+    types::value::LuaValue, vm::engine::VmConfig,
+};
+use proveno_zk::{
     policy::OraclePolicy,
-    types::value::LuaValue,
-    vm::engine::VmConfig,
     zkvm::{commitment::PublicInputs, dry_run_result::DryRunResult, guest_input::GuestInput},
 };
 

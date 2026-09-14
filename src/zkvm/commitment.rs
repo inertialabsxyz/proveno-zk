@@ -13,7 +13,7 @@
 use sha2::{Digest, Sha256};
 use sha3::Keccak256;
 
-use crate::{
+use proveno::{
     host::{canonicalize::canonical_serialize, tape::OracleTape},
     types::value::LuaValue,
     vm::engine::VmOutput,
@@ -354,7 +354,7 @@ mod tests {
 
     fn attested_tape() -> OracleTape {
         OracleTape {
-            entries: vec![crate::host::tape::TapeEntry::Ok(
+            entries: vec![proveno::host::tape::TapeEntry::Ok(
                 b"{\"price\":100}".to_vec(),
             )],
             attestations: vec![b"sig".to_vec()],

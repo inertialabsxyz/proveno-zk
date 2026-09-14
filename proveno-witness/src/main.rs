@@ -3,7 +3,8 @@ use std::{
     fs::{self, File},
 };
 
-use proveno::{VmConfig, compiler::CompiledProgram, policy::OraclePolicy, types::value::LuaValue};
+use proveno::{VmConfig, compiler::CompiledProgram, types::value::LuaValue};
+use proveno_zk::policy::OraclePolicy;
 
 use crate::{host::ProverHost, prover::Prover};
 
@@ -63,9 +64,9 @@ fn main() {
                     .map(|b| format!("{b:02x}"))
                     .collect::<String>()
             );
-            prover.dry_run_with_policy(&program.into(), LuaValue::Nil, vec![], &policy)
+            prover.dry_run_with_policy(&program, LuaValue::Nil, vec![], &policy)
         }
-        None => prover.dry_run(&program.into(), LuaValue::Nil, vec![]),
+        None => prover.dry_run(&program, LuaValue::Nil, vec![]),
     };
 
     // A policy violation is an expected outcome, not a bug, so report it rather

@@ -1,8 +1,8 @@
 use alloc::vec::Vec;
 
-use crate::compiler::proto::CompiledProgram;
+use proveno::compiler::proto::CompiledProgram;
 
-use crate::isa::opcodes::{instruction_to_opcode_id, instruction_to_operand};
+use proveno::isa::opcodes::{instruction_to_opcode_id, instruction_to_operand};
 
 pub const MAX_BYTECODE: usize = 512;
 
@@ -61,7 +61,7 @@ pub fn encode_program(program: &CompiledProgram) -> Result<NoirBytecode, EncodeE
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{compiler::compile, parser::parse};
+    use proveno::{compiler::compile, parser::parse};
 
     fn compile_lua(src: &str) -> CompiledProgram {
         compile(&parse(src).unwrap()).unwrap()

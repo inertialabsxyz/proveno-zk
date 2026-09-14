@@ -13,13 +13,12 @@
 
 use alloc::{format, string::String, vec::Vec};
 
-use crate::{
-    host::canonicalize::canonical_serialize_table,
-    policy::{
-        OraclePolicy,
-        canonical::{get_url_from_args, is_http_tool},
-    },
-    types::table::LuaTable,
+use crate::policy::{
+    OraclePolicy,
+    canonical::{get_url_from_args, is_http_tool},
+};
+use proveno::{
+    host::canonicalize::canonical_serialize_table, types::table::LuaTable,
     vm::engine::HostInterface,
 };
 
@@ -64,12 +63,12 @@ impl<H: HostInterface> HostInterface for OraclePolicyHost<'_, H> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
+    use crate::policy::TlsRequirement;
+    use proveno::{
         host::{
             tool_registry::ToolRegistry,
             transcript::{ToolCallStatus, Transcript},
         },
-        policy::TlsRequirement,
         types::{
             table::LuaKey,
             value::{LuaString, LuaValue},

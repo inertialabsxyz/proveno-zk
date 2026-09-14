@@ -2,11 +2,11 @@ use std::io;
 use std::path::Path;
 
 use proveno::isa::trace::TraceStep;
-use proveno::noir::encoder::NoirBytecode;
 use proveno::types::value::LuaValue;
 use proveno::vm::engine::VmOutput;
-use proveno::zkvm::commitment::{hash_input, hash_output};
 use proveno::{OracleTape, TapeEntry};
+use proveno_zk::noir::encoder::NoirBytecode;
+use proveno_zk::zkvm::commitment::{hash_input, hash_output};
 
 pub const MAX_BYTECODE: usize = 512;
 pub const MAX_STEPS: usize = 2048;
@@ -270,10 +270,10 @@ fn rows_toml<'a>(rows: impl Iterator<Item = &'a [u8]>) -> String {
 mod tests {
     use super::*;
     use proveno::compiler::compile;
-    use proveno::noir::encoder::encode_program;
     use proveno::parser::parse;
     use proveno::types::value::LuaValue;
     use proveno::{NoopHost, OracleTape, Vm, VmConfig};
+    use proveno_zk::noir::encoder::encode_program;
 
     fn run(src: &str) -> (NoirBytecode, VmOutput, i64) {
         let program = compile(&parse(src).unwrap()).unwrap();

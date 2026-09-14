@@ -1,12 +1,12 @@
 mod nargo_tests {
     use proveno::compiler::compile;
-    use proveno::noir::encoder::encode_program;
     use proveno::parser::parse;
     use proveno::types::table::{LuaKey, LuaTable};
     use proveno::types::value::{LuaString, LuaValue};
     use proveno::{HostInterface, OracleTape, Vm, VmConfig, VmOutput};
     use proveno_noir::prover::{NoirProof, NoirProver, ProveError};
     use proveno_noir::witness::{NoirWitness, build_witness};
+    use proveno_zk::noir::encoder::encode_program;
     use std::path::PathBuf;
     use std::sync::{Mutex, MutexGuard, OnceLock};
     use std::time::Instant;
@@ -24,14 +24,14 @@ mod nargo_tests {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../noir")
     }
 
-    fn run_lua(src: &str) -> (proveno::noir::encoder::NoirBytecode, VmOutput) {
+    fn run_lua(src: &str) -> (proveno_zk::noir::encoder::NoirBytecode, VmOutput) {
         run_lua_with_host(src, proveno::NoopHost)
     }
 
     fn run_lua_with_host<H: HostInterface>(
         src: &str,
         host: H,
-    ) -> (proveno::noir::encoder::NoirBytecode, VmOutput) {
+    ) -> (proveno_zk::noir::encoder::NoirBytecode, VmOutput) {
         let program = compile(&parse(src).unwrap()).unwrap();
         let bytecode = encode_program(&program).unwrap();
         let config = VmConfig {
