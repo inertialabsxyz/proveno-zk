@@ -59,7 +59,7 @@ elif [ ! -f openvm/app.pk ]; then
 fi
 
 echo "==> compiling $(basename "$PROG")"
-cargo run -q -p proveno-compiler -- "$PROG" "$OUT/$NAME.compiled.json"
+cargo run -q -p proveno-witness --bin proveno-compile -- "$PROG" "$OUT/$NAME.compiled.json"
 
 echo "==> dry run (records the oracle tape)"
 WITNESS_ARGS=("$OUT/$NAME.compiled.json" "$OUT/$NAME.dry.json")

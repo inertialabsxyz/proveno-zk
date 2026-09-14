@@ -49,7 +49,7 @@ for PROG in "$DIR"/*.lua; do
     B="$OUT/$NAME"
     C=- ; D=- ; R=- ; P=- ; V=- ; INSTR=- ; PT=- ; NOTE=
 
-    if cargo run -q -p proveno-compiler -- "$PROG" "$B.compiled.json" >"$B.log" 2>&1; then
+    if cargo run -q -p proveno-witness --bin proveno-compile -- "$PROG" "$B.compiled.json" >"$B.log" 2>&1; then
         C=ok
     else
         C=FAIL; NOTE=$(grep -m1 -oE '[A-Za-z]+Error[^,}]*|error: .*' "$B.log" | head -1)

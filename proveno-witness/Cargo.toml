@@ -1,6 +1,9 @@
 [package]
 name = "proveno-witness"
 version.workspace = true
+# This crate now ships two binaries; keep bare `cargo run -p proveno-witness`
+# meaning the witness, as the pipeline scripts expect.
+default-run = "proveno-witness"
 edition.workspace = true
 
 [dependencies]
@@ -13,3 +16,9 @@ reqwest = { workspace = true, features = ["blocking"] }
 [[bin]]
 name = "proveno-witness"
 path = "src/main.rs"
+
+# Lua -> verified bytecode JSON. Mirrors proveno-core's proveno-compiler so the
+# proving pipelines here do not depend on another repository's checkout.
+[[bin]]
+name = "proveno-compile"
+path = "src/bin/compile.rs"
