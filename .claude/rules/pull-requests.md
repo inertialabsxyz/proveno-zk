@@ -7,7 +7,7 @@ When all commits on a branch are done, `make check` passes, `make test-prove` pa
 - **Target:** always `main`
 - **State:** always open as **draft**
 - **Title:** `type(scope): short description` — same convention as the commit that drove the work (see `.claude/rules/commits.md`)
-- **Body:** summarise what changed (bullet points from the commits) and reference the relevant planning doc phase (e.g. _Implements Phase 1 — Proof Integrity, `planning/programmable-oracle-mvp-plan.md`_)
+- **Body:** summarise what changed (bullet points from the commits) and reference the issue or planning doc the work came from
 
 ```bash
 git push -u origin <branch>
