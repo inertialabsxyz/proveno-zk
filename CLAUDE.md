@@ -51,7 +51,7 @@ times are much lower; only the success-path tests are useful as benchmarks.
 | `src/zkvm/` | `PublicInputs`, `GuestInput`, `DryRunResult`, commitments |
 | `src/noir/` | `encode_program`, the fixed-size bytecode ABI for the circuit |
 | `noir/` | The Noir circuit itself (`src/main.nr`, `Nargo.toml`) |
-| `proveno-witness/` | Dry-runs a program, produces the oracle tape and public inputs. Also ships `proveno-compile` |
+| `proveno-witness/` | Dry-runs a program, produces the oracle tape and public inputs. Also ships `proveno-compile` and `proveno-gateway-trace` |
 | `proveno-noir/` | Noir witness writer and `nargo`/`bb` prover driver |
 | `proveno-openvm/` | OpenVM zkVM guest (RISC-V) |
 | `proveno-openvm-host/` | Host driver for the OpenVM backend |
@@ -72,6 +72,22 @@ cargo run -p proveno-witness -- compiled.json dry_result.json [--policy <spec>]
 cargo run -p proveno-noir   -- compiled.json dry_result.json --prove
 cargo run -p proveno-openvm-host -- compiled.json dry_result.json --prove [--stark]
 ```
+
+### Proving a proveno-gateway trace
+
+```bash
+cargo run -p proveno-witness --bin proveno-gateway-trace -- <store_dir> <trace_id> target/openvm
+O=target/openvm/<trace_id>
+cargo run -p proveno-openvm-host -- $O.compiled.json $O.dry.json \
+    --policy $O.policy.json --vm-config $O.vm_config.json --prove [--stark]
+```
+
+The first step recompiles the stored program, checks it against the header's
+`program_hash`, rebuilds the tape from the records and replays it strictly
+against the footer. It does not check the trace signature. `policy_hash` is the
+`OraclePolicy` built from the header's `vm_config`, not the gateway's rules:
+`gateway_policy_hash` and `description_hash` are not public inputs. Keys: run
+`cargo openvm keygen` once (with `--app-only` if you only need `app`).
 
 `proveno-compile` mirrors proveno-core's `proveno-compiler` so the pipelines do
 not have to shell into another repository's checkout. `proveno-witness` sets
@@ -143,6 +159,10 @@ indistinguishable from a weaker one.
 - **Provenance.** `attestation_hash` *binds* a per-call attestation blob to the
   response bytes it covers; it does not authenticate it. The circuit binds
   blobs. Keep this honest in prose.
+- **A non-integer return value.** `output_hash` commits
+  `abi.encode(int256(return_value))`, and anything but an integer proves as
+  `0`. A program returning a table, as gateway programs do, has its output
+  unbound.
 - **Constants, on the Noir path.** See the known gap in
   [proveno-core's CLAUDE.md](https://github.com/inertialabsxyz/proveno-core/blob/main/CLAUDE.md).
 
