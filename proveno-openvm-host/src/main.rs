@@ -355,6 +355,7 @@ mod tests {
         input.oracle_tape = proveno::host::tape::OracleTape {
             entries: vec![TapeEntry::Ok(b"{\"v\":\"\\xff\\x00 binary\"}".to_vec())],
             attestations: vec![b"\x00\x01\xfe".to_vec()],
+            calls: vec![],
         };
         let words = openvm::serde::to_vec(&input).unwrap();
         let decoded: GuestInput = openvm::serde::from_slice(&words).unwrap();

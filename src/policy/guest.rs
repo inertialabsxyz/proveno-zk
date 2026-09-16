@@ -105,6 +105,7 @@ mod tests {
         OracleTape {
             entries: (0..n).map(|_| TapeEntry::Ok(b"{}".to_vec())).collect(),
             attestations: vec![Vec::new(); n],
+            calls: vec![],
         }
     }
 

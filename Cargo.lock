@@ -1659,7 +1659,7 @@ dependencies = [
 [[package]]
 name = "proveno"
 version = "0.1.0"
-source = "git+https://github.com/inertialabsxyz/proveno-core.git?tag=v0.2.0#d92752dfe91cce8921b176ef1a95f31f560e71d7"
+source = "git+https://github.com/inertialabsxyz/proveno-core.git?tag=v0.4.0#88ae201a33f582732ac0b7e5ecdd98bd79638a07"
 dependencies = [
  "acir",
  "bn254_blackbox_solver",

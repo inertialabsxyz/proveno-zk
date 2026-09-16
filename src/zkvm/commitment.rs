@@ -358,6 +358,7 @@ mod tests {
                 b"{\"price\":100}".to_vec(),
             )],
             attestations: vec![b"sig".to_vec()],
+            calls: vec![],
         }
     }
 
