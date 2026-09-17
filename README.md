@@ -12,8 +12,8 @@ into a proof a verifier will accept.
 
 | Backend | Commitments | Use |
 |---|---|---|
-| Noir / UltraHonk | Poseidon2 | the canonical path; small proofs, on-chain verification |
-| OpenVM | SHA-256 | a RISC-V zkVM alternative; `app` and aggregated `stark` levels |
+| OpenVM | SHA-256 | canonical; RISC-V zkVM, `app` and aggregated `stark` levels |
+| Noir / UltraHonk | Poseidon2 | in development: constrains control flow, not computation; do not rely on its proofs for results or policy |
 
 The two are **not interchangeable**. `program_hash`,
 `tool_responses_hash` and `attestation_hash` are backend-specific, and a
@@ -28,18 +28,18 @@ cargo run -p proveno-witness --bin proveno-compile -- source.lua compiled.json
 # 2. Dry run with a live host -> oracle tape + public inputs
 cargo run -p proveno-witness -- compiled.json dry_result.json --policy <spec>
 
-# 3a. Noir proof
-cargo run -p proveno-noir -- compiled.json dry_result.json --prove
-
-# 3b. or the OpenVM backend
+# 3a. OpenVM proof
 cargo run -p proveno-openvm-host -- compiled.json dry_result.json --prove [--stark]
+
+# 3b. or the Noir backend (in development)
+cargo run -p proveno-noir -- compiled.json dry_result.json --prove
 ```
 
 Or in one shot:
 
 ```bash
 make prove-openvm                # examples/simple.lua, compile -> prove -> verify
-./prove-openvm.sh myscript.lua --policy policies/test-policy.json
+./prove-openvm.sh myscript.lua --policy <profile-or-json-file>
 ```
 
 ## Execution policy
@@ -50,8 +50,10 @@ public input. The guest parses the enforceable fields out of the same bytes it
 hashes, so the policy enforced and the policy committed are one document by
 construction.
 
-A run that violates the policy cannot be replayed, so no proof of it exists.
-This holds even if the host skipped enforcement during the dry run.
+On OpenVM, a run that violates the policy cannot be replayed, so no proof of it
+exists. This holds even if the host skipped enforcement during the dry run. The
+Noir backend enforces no policy: its circuit takes `policy_hash` as a public
+input and does not check the run against it.
 
 What a proof still cannot tell you is whether a response genuinely came from the
 domain the program requested. That is provenance, and it is delegated to an
