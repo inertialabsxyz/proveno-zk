@@ -3,6 +3,14 @@
 Solidity contracts for verifying Proveno Noir UltraHonk proofs on-chain and
 consuming their outputs.
 
+> **Status.** These contracts verify the Noir backend, which is in development.
+> Its circuit constrains a run's control flow, not its computation, so a proof
+> these contracts accept does not establish a program's result and does not
+> enforce the execution policy: `ProvenoVerifier` checks that `policyHash`
+> matches, but the circuit does not check the run against that policy. Do not
+> rely on these contracts for results or policy.
+> OpenVM is the canonical proving backend and has no on-chain verifier yet.
+
 ## Contracts
 
 | Contract | Description |
@@ -10,7 +18,7 @@ consuming their outputs.
 | `src/HonkVerifier.sol` | UltraHonk verifier generated from the Noir VK by `bb write_solidity_verifier` |
 | `src/Types.sol` | `PublicInputs` struct + `PublicInputsLib.pack` (wire-format expansion) |
 | `src/ProvenoVerifier.sol` | Enforces `policyHash` and forwards the proof + packed public inputs to `HonkVerifier` |
-| `src/ProvenoConsumer.sol` | Example consumer: verifies, then asserts `keccak256(outputPayload) == outputHash`, then decodes a price-feed payload |
+| `src/ProvenoConsumer.sol` | Example consumer: verifies, then asserts `keccak256(outputPayload) == outputHash`, then decodes a single `int256` result |
 
 ## Regenerating `HonkVerifier.sol`
 
@@ -48,7 +56,7 @@ struct PublicInputs {
     bytes32 toolResponsesHash;
     bytes32 inputHash;
     bytes32 outputHash;
-    bytes32 tlsAttestationHash;
+    bytes32 attestationHash;
     bytes32 policyHash;
 }
 ```
@@ -62,7 +70,7 @@ struct PublicInputs {
 [34 .. 66)     toolResponsesHash bytes
 [66 .. 98)     inputHash bytes
 [98 .. 130)    outputHash bytes
-[130 .. 162)   tlsAttestationHash bytes
+[130 .. 162)   attestationHash bytes
 [162 .. 194)   policyHash bytes
 ```
 
@@ -86,28 +94,24 @@ verifier. After such a change you **must** do all three of the following:
 3. Update `PublicInputsLib.pack` so each scalar / `[u8; 32]` field is written
    into the `bytes32[]` at the same offset that `bb prove -t evm` produces.
 
-The Rust-side `bytes32[]` ordering in `../proveno-orchestrator/src/prove.rs`
-(`build_proof_artifacts_with_noir`) and any test fixtures under
-`contracts/test/fixtures/` must be regenerated to match.
+Any Rust code that builds the `bytes32[]` for these contracts, and the test
+fixtures under `contracts/test/fixtures/`, must then be regenerated to match.
 
 ## Output payload schema
 
 `ProvenoConsumer.consumeResult` expects `outputPayload` to be:
 
 ```solidity
-abi.encode(uint256 price, uint8 sourcesUsed, uint64 blockTimestamp)
+abi.encode(int256(return_value))
 ```
 
-| Field | Type | Description |
-|---|---|---|
-| `price` | `uint256` | Asset price scaled to 18 decimal places |
-| `sourcesUsed` | `uint8` | Number of oracle sources that contributed |
-| `blockTimestamp` | `uint64` | Unix timestamp of the observation |
+This is the preimage of `output_hash` as computed in `../src/zkvm/commitment.rs`.
+The consumer asserts `keccak256(outputPayload) == inputs.outputHash`, then
+decodes the payload as a single `int256`:
 
-The consumer asserts `keccak256(outputPayload) == inputs.outputHash`. Producing
-an `outputHash` that matches `keccak256` of an abi-encoded payload is the
-responsibility of the Lua program author — the circuit treats `outputHash`
-opaquely and the consumer treats the payload opaquely.
+```solidity
+int256 result = abi.decode(outputPayload, (int256));
+```
 
 ## Usage
 

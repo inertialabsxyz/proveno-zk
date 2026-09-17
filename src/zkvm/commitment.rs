@@ -8,7 +8,7 @@
 //!   - which tool responses were consumed (`tool_responses_hash`)
 //!   - what outputs were produced (`output_hash`)
 //!   - per-call provenance attestations bound to those responses (`attestation_hash`)
-//!   - execution policy (`policy_hash`, Phase 2 stub)
+//!   - execution policy (`policy_hash`)
 
 use sha2::{Digest, Sha256};
 use sha3::Keccak256;
@@ -43,8 +43,9 @@ pub struct PublicInputs {
     /// keccak256 of the canonical output payload `abi.encode(int256(return_value))`.
     ///
     /// This is the exact preimage and algorithm an on-chain consumer checks via
-    /// `keccak256(outputPayload) == inputs.outputHash`, and it is bound
-    /// *in-circuit* to the proven `return_value` (see `noir/src/main.nr`). It
+    /// `keccak256(outputPayload) == inputs.outputHash`. Binding it to the
+    /// proven `return_value` in-circuit is a statement of the Noir circuit (see
+    /// `noir/src/main.nr`), and the Noir backend is in development. It
     /// deliberately commits only the result the contract decodes — `logs` and
     /// `transcript` provenance is carried by `tool_responses_hash` /
     /// `attestation_hash`, not here.
@@ -64,8 +65,10 @@ pub struct PublicInputs {
     pub attestation_hash: [u8; 32],
 
     /// SHA-256 of the canonical encoding of the `OraclePolicy` document.
-    /// Zero until Phase 2 populates this field.
-    pub policy_hash: [u8; 32], // Phase 2 stub
+    /// Populated by `compute_public_inputs_with_policy` and
+    /// `compute_public_inputs_sha256_with_policy_hash`; `[0u8; 32]` when the
+    /// public inputs are built without a policy.
+    pub policy_hash: [u8; 32],
 }
 
 impl PublicInputs {

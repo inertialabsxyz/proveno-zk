@@ -2,6 +2,12 @@
 > when this content lived in the proveno monorepo. Paths and crate names
 > may not match the current layout. Kept for the measurements and the
 > reasoning, not as current instructions.
+>
+> **The gas figures describe no current verifier.** The gas "PASS" verdict was
+> measured against `StubOpenVmVerifier`, an always-true stub verifier, and the
+> Groth16 estimate refers to an OpenVM Groth16 path that no longer exists, so
+> neither figure describes any current verifier. OpenVM is now the canonical
+> backend and has no on-chain verifier; the Noir backend is in development.
 
 # Phase 3 Benchmarks — On-Chain Viability
 
