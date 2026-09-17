@@ -19,6 +19,14 @@ Core arrives as a git dependency pinned to a tag, with
 `default-features = false`. The [architecture document](https://github.com/inertialabsxyz/proveno/blob/main/docs/architecture.md)
 in the umbrella is the tie-breaker when documents disagree.
 
+## Backend status
+
+OpenVM is the canonical proving backend. The Noir / UltraHonk backend is **in
+development** until stated otherwise: its circuit constrains a run's control
+flow, not its computation, so a Noir proof does not establish a program's result
+and does not enforce the execution policy. Do not describe Noir proofs as
+attesting to results or policy.
+
 ## Quality Gate
 
 ```bash
@@ -101,8 +109,8 @@ not — they are fixed by their consumers.
 
 | Backend | Scheme | Constructor |
 |---|---|---|
-| Noir / UltraHonk | Poseidon2 | `compute_public_inputs` |
 | zkVM (OpenVM) | SHA-256 | `compute_public_inputs_sha256` |
+| Noir / UltraHonk (in development) | Poseidon2 | `compute_public_inputs` |
 
 They are **not interchangeable**: a verifier must recompute with the scheme the
 prover used.
@@ -112,13 +120,15 @@ prover used.
 custom RISC-V target triples, and cargo runs it whether or not the code is
 linked.
 
-Public inputs, in circuit-declaration order: `num_steps`, `program_hash`,
-`return_value`, `tool_responses_hash`, `input_hash`, `output_hash`,
-`attestation_hash`, `policy_hash`. The Solidity `PublicInputs` struct in
+The Noir circuit's public inputs, in circuit-declaration order: `num_steps`,
+`program_hash`, `return_value`, `tool_responses_hash`, `input_hash`,
+`output_hash`, `attestation_hash`, `policy_hash`. The Solidity `PublicInputs` struct in
 `contracts/src/Types.sol` mirrors this ordering exactly; reordering breaks
 verification.
 
 ## Execution policy
+
+This section describes the OpenVM backend. The Noir backend enforces no policy.
 
 An `OraclePolicy` constrains what an execution may do: domain allowlist, HTTP
 method restriction, call and payload limits, response schemas. Supply it as a
@@ -163,6 +173,9 @@ indistinguishable from a weaker one.
   `abi.encode(int256(return_value))`, and anything but an integer proves as
   `0`. A program returning a table, as gateway programs do, has its output
   unbound.
+- **Computation, on the Noir path.** The Noir circuit constrains control flow,
+  not computation, so a Noir proof attests to neither the result nor the
+  policy. The backend is in development.
 - **Constants, on the Noir path.** See the known gap in
   [proveno-core's CLAUDE.md](https://github.com/inertialabsxyz/proveno-core/blob/main/CLAUDE.md).
 
