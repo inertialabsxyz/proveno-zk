@@ -22,3 +22,8 @@ path = "src/main.rs"
 [[bin]]
 name = "proveno-compile"
 path = "src/bin/compile.rs"
+
+# A proveno-gateway trace store to the OpenVM host's inputs, without a live run.
+[[bin]]
+name = "proveno-gateway-trace"
+path = "src/bin/gateway_trace.rs"

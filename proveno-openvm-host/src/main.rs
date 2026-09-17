@@ -18,7 +18,7 @@ use std::{env, fs, process::Command};
 
 use proveno::{
     compiler::proto::CompiledProgram, host::canonicalize::canonical_serialize,
-    types::value::LuaValue, vm::engine::VmConfig,
+    host::tape::OracleTape, types::value::LuaValue, vm::engine::VmConfig,
 };
 use proveno_zk::{
     policy::OraclePolicy,
@@ -31,6 +31,8 @@ Usage: proveno-openvm-host <compiled.json> <dry_result.json> [options]
 Options:
   --policy <spec>  profile name or path to a JSON policy file; its canonical
                    bytes are shipped to the guest, which hashes them itself
+  --vm-config <path>
+                   JSON VmConfig the dry run used [default: VmConfig::default()]
   --out <path>     where to write the guest input JSON [default: openvm_input.json]
   --prove          generate and verify a proof
   --stark          prove at the aggregated STARK level instead of `app`
@@ -126,6 +128,25 @@ fn run_openvm(args: &[&str]) -> Result<(), String> {
     }
 }
 
+/// The VM limits to replay under: the dry run's, when it recorded them.
+fn load_vm_config(path: Option<&str>) -> Result<VmConfig, String> {
+    let Some(path) = path else {
+        return Ok(VmConfig::default());
+    };
+    let src = fs::read_to_string(path).map_err(|e| format!("reading {path}: {e}"))?;
+    serde_json::from_str(&src).map_err(|e| format!("parsing {path}: {e}"))
+}
+
+/// The tape as shipped to the guest, without `calls`.
+///
+/// `calls` serves strict replay on the host and is in no commitment. The guest
+/// replays non-strictly, so shipping it would only enlarge the input.
+fn guest_tape(tape: &OracleTape) -> OracleTape {
+    let mut tape = tape.clone();
+    tape.calls.clear();
+    tape
+}
+
 fn run() -> Result<(), String> {
     let args: Vec<String> = env::args().skip(1).collect();
     if args.is_empty() || args.iter().any(|a| a == "--help" || a == "-h") {
@@ -139,6 +160,7 @@ fn run() -> Result<(), String> {
     let mut stark = false;
     let mut proof_path: Option<String> = None;
     let mut policy_spec: Option<String> = None;
+    let mut vm_config_path: Option<String> = None;
     let mut it = args.into_iter();
     while let Some(arg) = it.next() {
         match arg.as_str() {
@@ -146,6 +168,9 @@ fn run() -> Result<(), String> {
             "--stark" => stark = true,
             "--proof" => proof_path = Some(it.next().ok_or("--proof requires a value")?),
             "--policy" => policy_spec = Some(it.next().ok_or("--policy requires a value")?),
+            "--vm-config" => {
+                vm_config_path = Some(it.next().ok_or("--vm-config requires a value")?)
+            }
             "--out" => out_path = it.next().ok_or("--out requires a value")?,
             other if other.starts_with("--") => {
                 return Err(format!("unknown option '{other}'\n\n{USAGE}"))
@@ -173,7 +198,7 @@ fn run() -> Result<(), String> {
     // These must match what proveno-witness used for the dry run, or the guest
     // replay diverges and the proof fails to generate.
     let input_value = LuaValue::Nil;
-    let config = VmConfig::default();
+    let config = load_vm_config(vm_config_path.as_deref())?;
 
     // The policy must be the same one proveno-witness enforced during the dry
     // run. Nothing here can check that, so mismatching the two produces a proof
@@ -186,7 +211,7 @@ fn run() -> Result<(), String> {
     let mut guest_input = GuestInput::new(
         program,
         input_value,
-        dry.oracle_tape.clone(),
+        guest_tape(&dry.oracle_tape),
         config,
         Vec::new(),
     );
@@ -355,6 +380,7 @@ mod tests {
         input.oracle_tape = proveno::host::tape::OracleTape {
             entries: vec![TapeEntry::Ok(b"{\"v\":\"\\xff\\x00 binary\"}".to_vec())],
             attestations: vec![b"\x00\x01\xfe".to_vec()],
+            calls: vec![],
         };
         let words = openvm::serde::to_vec(&input).unwrap();
         let decoded: GuestInput = openvm::serde::from_slice(&words).unwrap();
@@ -383,5 +409,67 @@ mod tests {
         assert!(hex_str.chars().all(|c| c.is_ascii_hexdigit()));
         // Body is whole u32 words, since StdIn flattens to_vec output LE.
         assert!((hex_str.len() - 2).is_multiple_of(8));
+    }
+
+    /// Clearing `calls` must not move anything the guest reveals, or the
+    /// guest input would no longer prove the dry run it came from.
+    #[test]
+    fn guest_tape_drops_calls_without_changing_the_digest() {
+        use proveno::host::{
+            tape::TapeCall,
+            transcript::{ToolCallRecord, ToolCallStatus},
+        };
+        let record = ToolCallRecord {
+            seq: 0,
+            tool_name: "t".into(),
+            args_canonical: b"{\"a\":1}".to_vec(),
+            args_bytes: 7,
+            response_hash: String::new(),
+            response_bytes: 7,
+            response_canonical: b"{\"v\":1}".to_vec(),
+            error_message: String::new(),
+            attestation: Vec::new(),
+            gas_charged: 0,
+            status: ToolCallStatus::Ok,
+        };
+        let tape = OracleTape::from_records(&[record]);
+        assert_eq!(
+            tape.calls,
+            vec![TapeCall {
+                tool_name: "t".into(),
+                args_canonical: b"{\"a\":1}".to_vec()
+            }]
+        );
+
+        let src = "local r = tool.call(\"t\", { a = 1 }) return r.v";
+        let mut with_calls = guest_input_for(src);
+        with_calls.oracle_tape = tape.clone();
+        let mut without = guest_input_for(src);
+        without.oracle_tape = guest_tape(&tape);
+
+        assert!(without.oracle_tape.calls.is_empty());
+        let (_, a) = with_calls.replay_public_inputs().unwrap();
+        let (_, b) = without.replay_public_inputs().unwrap();
+        assert_eq!(a.digest_sha256(), b.digest_sha256());
+    }
+
+    #[test]
+    fn vm_config_is_read_from_the_given_file() {
+        let path = std::env::temp_dir().join(format!("vm_config_{}.json", std::process::id()));
+        let config = VmConfig {
+            gas_limit: 2_000_000,
+            max_tool_calls: 64,
+            ..VmConfig::default()
+        };
+        fs::write(&path, serde_json::to_string(&config).unwrap()).unwrap();
+        let loaded = load_vm_config(Some(path.to_str().unwrap())).unwrap();
+        fs::remove_file(&path).unwrap();
+
+        assert_eq!(loaded.gas_limit, 2_000_000);
+        assert_eq!(loaded.max_tool_calls, 64);
+        assert_eq!(
+            load_vm_config(None).unwrap().gas_limit,
+            VmConfig::default().gas_limit
+        );
     }
 }

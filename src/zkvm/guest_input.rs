@@ -283,6 +283,7 @@ mod tests {
         gi.oracle_tape = OracleTape {
             entries: vec![TapeEntry::Ok(b"{\"ok\":1}".to_vec())],
             attestations: vec![Vec::new()],
+            calls: vec![],
         };
         gi
     }
@@ -339,6 +340,7 @@ mod tests {
         gi.oracle_tape = OracleTape {
             entries: vec![TapeEntry::Ok(b"{}".to_vec()), TapeEntry::Ok(b"{}".to_vec())],
             attestations: vec![Vec::new(), Vec::new()],
+            calls: vec![],
         };
         let input = gi.with_policy_canonical(policy_for(&["api.example.com"], 1).canonical_bytes());
 
@@ -435,11 +437,13 @@ mod tests {
         a.oracle_tape = OracleTape {
             entries: vec![TapeEntry::Ok(b"{\"v\":1}".to_vec())],
             attestations: vec![Vec::new()],
+            calls: vec![],
         };
         let mut b = guest_input_for(src);
         b.oracle_tape = OracleTape {
             entries: vec![TapeEntry::Ok(b"{\"v\":2}".to_vec())],
             attestations: vec![Vec::new()],
+            calls: vec![],
         };
 
         let (_, pi_a) = a.replay_public_inputs().unwrap();
